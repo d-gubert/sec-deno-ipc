@@ -1,0 +1,24 @@
+{
+	"env": {
+		"es2021": true,
+		"node": true
+	},
+	"extends": "standard-with-typescript",
+	"overrides": [
+		{
+			"files": ["*.js", "*.jsx", "*.ts", "*.tsx"],
+			"extends": "standard-with-typescript",
+			"parserOptions": {
+				"project": "./tsconfig.json"
+			},
+			"rules": {
+				"@typescript-eslint/semi": ["error", "always"],
+				"semi": ["error", "always"],
+				"indent": ["error", "tab"],
+				"@typescript-eslint/indent": ["error", "tab"],
+				"no-tabs": "off",
+				"@typescript-eslint/comma-dangle": "off"
+			}
+		}
+	]
+}
