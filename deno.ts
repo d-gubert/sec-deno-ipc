@@ -1,10 +1,18 @@
 import { Buffer } from 'node:buffer';
-const stdin = Deno.stdin;
+import { encode, decode } from 'npm:cbor-x';
 
-async function main (): Promise<void> {
-	for await (let chunk of stdin.readable) {
-		chunk = Buffer.from(chunk);
-		console.log('DENO >', chunk, chunk.toString());
+const stdin = Deno.stdin;
+const stdout = Deno.stdout;
+
+async function main(): Promise<void> {
+	for await (const rawChunk of stdin.readable) {
+		console.log('DENO >', {
+			rawChunk: typeof rawChunk,
+			buffer: Buffer.from(rawChunk).toString(),
+			cbor: decode(rawChunk),
+		});
+		await Deno.writeTextFile('test.txt', decode(rawChunk));
+		// await stdout.write();
 	}
 }
 
