@@ -22,14 +22,28 @@ deno.stderr.on('data', function (data) {
 
 deno.stdin.write(encode({"type":"start","path":"./deno.ts"}));
 
+const subprocess = spawn('node', ['sub.js']);
+
+subprocess.stdout.on('data', function (data) {
+	console.log(data.toString());
+});
+
+subprocess.stderr.on('data', function (data) {
+	console.log('OOPS FROM SUBOPROCESS >', data.toString());
+});
+
+subprocess.stdin.write(encode({"type":"start","path":"./deno.ts"}));
+
 process.stdin.on('data', function (data) {
 	if (data.toString() === 'exit\n') {
 		process.stdout.write('Byeeeeee' + EOL);
 		deno.kill();
+		subprocess.kill();
 		return process.exit(0);
 	}
 
 	deno.stdin.write(encode({ message: data }));
+	subprocess.stdin.write(encode({ message: data }));
 });
 
 // connect the server to the deno process
