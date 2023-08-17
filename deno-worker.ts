@@ -1,4 +1,3 @@
-import vm from 'node:vm';
 import { Buffer } from 'node:buffer';
 import { encode, decode } from 'npm:cbor-x';
 
@@ -7,18 +6,33 @@ declare const self: Window & typeof globalThis & { onmessage: (event: MessageEve
 // eslint-disable-next-line
 const log = (...args: any[]): void => (console.log('WORKER >', ...args), undefined);
 
+const wrapAppCode = (code: string): Function => new Function(`
+	const exports = {};
+	const module = { exports };
+	const require = (...args) => {
+		console.log('require', ...args);
+		return {
+			App: class DummyApp {},
+		}
+	};
+	((exports,module,require) => {
+		${code};
+	})(exports,module,require);
+	return module.exports;
+`);
+
 self.onmessage = async (event) => {
-	const payload = decode(event.data);
+	const data = decode(event.data);
 
-	if (payload.event === 'construct') {
-		log('constructing app', payload);
+	if (data.event === 'construct') {
+		const result = wrapAppCode(data.payload.appSourceFileContent);
 
-		const result = await vm.runInNewContext(payload.appSourceFileContent);
-
-		log({ result });
+		log(result, data.payload.appSourceFileContent);
+		log(result(data.payload.appSourceFileContent));
+		return;
 	}
 
 	log(Buffer.from(event.data), decode(event.data));
 };
 
-log(self);
+// log(self);
