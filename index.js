@@ -1,15 +1,16 @@
 import { encode, decode } from 'cbor-x';
 import { spawn } from 'child_process';
+import { readFileSync } from 'fs';
 import { EOL } from 'os';
 // import { unlinkSync } from 'fs';
 
 const deno = spawn('/home/douglas/.nvm/versions/node/v14.21.3/bin/npx', [
 	'deno',
 	'run',
-	'--allow-net',
-	'--allow-write',
+	'--allow-read=deno-worker.ts',
 	'--node-modules-dir',
 	'deno.ts',
+	'--subprocess',
 ]);
 
 deno.stdout.on('data', function (data) {
@@ -20,30 +21,31 @@ deno.stderr.on('data', function (data) {
 	console.log('OOPS FROM DENO >', data.toString());
 });
 
-deno.stdin.write(encode({"type":"start","path":"./deno.ts"}));
-
-const subprocess = spawn('node', ['sub.js']);
-
-subprocess.stdout.on('data', function (data) {
-	console.log(data.toString());
-});
-
-subprocess.stderr.on('data', function (data) {
-	console.log('OOPS FROM SUBOPROCESS >', data.toString());
-});
-
-subprocess.stdin.write(encode({"type":"start","path":"./deno.ts"}));
+deno.stdin.write(encode({ type: 'start', path: './deno.ts' }));
 
 process.stdin.on('data', function (data) {
-	if (data.toString() === 'exit\n') {
+	if (data.includes('exit')) {
 		process.stdout.write('Byeeeeee' + EOL);
 		deno.kill();
-		subprocess.kill();
 		return process.exit(0);
 	}
 
+	if (data.includes('send app')) {
+		const appFileContent = readFileSync('./TestApp.js', 'utf-8');
+
+		const message = {
+			event: 'construct app',
+			payload: {
+				appId: 'e7ad328b-661d-48d5-aca8-35de299c2ccd',
+				appSourceFileContent: appFileContent,
+			},
+		};
+
+		deno.stdin.write(encode(message));
+		return;
+	}
+
 	deno.stdin.write(encode({ message: data }));
-	subprocess.stdin.write(encode({ message: data }));
 });
 
 // connect the server to the deno process

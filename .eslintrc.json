@@ -12,11 +12,13 @@
 				"project": "./tsconfig.json"
 			},
 			"rules": {
-				"@typescript-eslint/semi": ["error", "always"],
 				"semi": ["error", "always"],
 				"indent": ["error", "tab"],
-				"@typescript-eslint/indent": ["error", "tab"],
 				"no-tabs": "off",
+				"space-before-function-paren": "off",
+				"@typescript-eslint/space-before-function-paren": "off",
+				"@typescript-eslint/semi": ["error", "always"],
+				"@typescript-eslint/indent": ["error", "tab"],
 				"@typescript-eslint/comma-dangle": "off"
 			}
 		}
