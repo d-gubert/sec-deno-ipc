@@ -7,6 +7,8 @@ The commit history will contain the steps taken and features tested. Interesting
 
 The HEAD of this repository will not contain a final working version for the Apps-Engine itself, but only the latest stage of testing I'm in.
 
+*Next step*: determine app's dependencies before hand so we can prompt the worker to load them asynchronously _before parsing the code_ - this way we can workaround the lack of sync require.
+
 ## Notes/Lessons learned
 
 - Deno doesn't have a require and the only way to dynamically import modules is asynchronous.
