@@ -27,6 +27,7 @@ The HEAD of this repository will not contain a final working version for the App
 
 From latest to oldest. Sometimes the commit title/message is not good enough, this is an opportunity to expand on them.
 
+* [1715b97](https://github.com/d-gubert/sec-deno-ipc/commit/1715b97cf3a3e89c8240b504977bdceaf2349877) Tried to provide a working `require` function. However, all dynamic imports in Deno are asynchronous.
 * [81e5d21](https://github.com/d-gubert/sec-deno-ipc/commit/81e5d217bcc9af4dbf752f4a7b56e947d89fc018) Replace VM with Function constructor for parsing app code
 * [4e28fe0](https://github.com/d-gubert/sec-deno-ipc/commit/4e28fe0a40a8d4c5b95da295e08e7597d65038a4) Transfer the contents of a bundled rc app from Node to Deno (to worker) - and finding out `vm` does't work
 * [015db6c](https://github.com/d-gubert/sec-deno-ipc/commit/015db6c4d6236f238dd677208a8f4044b96c320f) Here we see that cbor-x decodes buffers as `Uint8Arrays` when running in Deno, but decodes them as `Buffer`s when running in Node. Not a big deal, but noteworthy.
