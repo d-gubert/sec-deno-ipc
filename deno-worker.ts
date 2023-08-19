@@ -6,20 +6,25 @@ declare const self: Window & typeof globalThis & { onmessage: (event: MessageEve
 // eslint-disable-next-line
 const log = (...args: any[]): void => (console.log('WORKER >', ...args), undefined);
 
-const wrapAppCode = (code: string): Function => new Function(`
+const wrapAppCode = (code: string): Function => new Function('require', `
 	const exports = {};
 	const module = { exports };
-	const require = (...args) => {
-		console.log('require', ...args);
-		return {
-			App: class DummyApp {},
-		}
-	};
 	((exports,module,require) => {
 		${code};
 	})(exports,module,require);
 	return module.exports;
 `);
+
+const requirer = (module: string): any => {
+	console.log('require', module);
+	if (['path', 'url', 'crypto', 'buffer', 'stream', 'net', 'http', 'https', 'zlib', 'util', 'punycode', 'os', 'querystring'].includes(module)) {
+		import * as mod from 'node:' + module;
+		return mod;
+	}
+	return {
+		App: class DummyApp {},
+	}
+};
 
 self.onmessage = async (event) => {
 	const data = decode(event.data);
@@ -28,7 +33,7 @@ self.onmessage = async (event) => {
 		const result = wrapAppCode(data.payload.appSourceFileContent);
 
 		log(result, data.payload.appSourceFileContent);
-		log(result(data.payload.appSourceFileContent));
+		log(result(requirer));
 		return;
 	}
 
