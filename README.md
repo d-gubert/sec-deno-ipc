@@ -11,6 +11,12 @@ The HEAD of this repository will not contain a final working version for the App
 
 ## Notes/Lessons learned
 
+There is a big blocker with Apps-Engine imports here. Because the package is designed to not act as a module per se (by exporting the components from its entrypoint) but rather more as a folder for the required files to interact with, Deno does not interact with it the same way Node does. For it to recognize the internal imports from the Apps-Engine it requires the use of [import maps](https://deno.land/manual@v1.36.2/basics/import_maps#example---using-deno_stds-fmt-module-via-fmt)
+
+Another issue that appeared is how the Apps-Engine is compiled. I've tried different target modules `commonjs`, `umd`, `es6`, but there are always different problems including files from inside the worker. I've been able to interact a bit with the package via the REPL but I couldn't determine why.
+
+This _might_ be a particularity of using the Apps-Engine, I'll try it out from inside the engine to see if importing works differently.
+
 - Deno doesn't have a require and the only way to dynamically import modules is asynchronous.
 - Even if it is possible to import a module native to node (via `node:MODULE_NAME`), that doesn't mean all functionalities are supported - the `vm` module is an example
 - As `vm` is not implemented, we needed to fallback to the `eval`-like `Function` constructor
