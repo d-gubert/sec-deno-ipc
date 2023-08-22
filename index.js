@@ -4,6 +4,19 @@ import { readFileSync } from 'fs';
 import { EOL } from 'os';
 // import { unlinkSync } from 'fs';
 
+function getAppDependencies(appSourceFileContent) {
+	const regex = /require\((['"])(.+?)\1\)/g;
+	const dependencies = [];
+
+	let match;
+
+	while ((match = regex.exec(appSourceFileContent), match !== null)) {
+		dependencies.push(match[2]);
+	}
+
+	return dependencies;
+}
+
 const deno = spawn('/home/douglas/.nvm/versions/node/v14.21.3/bin/npx', [
 	'deno',
 	'run',
@@ -38,6 +51,7 @@ process.stdin.on('data', function (data) {
 			payload: {
 				appId: 'e7ad328b-661d-48d5-aca8-35de299c2ccd',
 				appSourceFileContent: appFileContent,
+				deps: getAppDependencies(appFileContent),
 			},
 		};
 

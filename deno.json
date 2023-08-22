@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "@rocket.chat/apps-engine/": "./node_modules/@rocket.chat/apps-engine/src/"
+  }
+}
