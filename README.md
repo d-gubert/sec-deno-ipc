@@ -11,12 +11,17 @@ The HEAD of this repository will not contain a final working version for the App
 
 ## Notes/Lessons learned
 
-There is a big blocker with Apps-Engine imports here. Because the package is designed to not act as a module per se (by exporting the components from its entrypoint) but rather more as a folder for the required files to interact with, Deno does not interact with it the same way Node does. For it to recognize the internal imports from the Apps-Engine it requires the use of [import maps](https://deno.land/manual@v1.36.2/basics/import_maps#example---using-deno_stds-fmt-module-via-fmt)
-
-Another issue that appeared is how the Apps-Engine is compiled. I've tried different target modules `commonjs`, `umd`, `es6`, but there are always different problems including files from inside the worker. I've been able to interact a bit with the package via the REPL but I couldn't determine why.
-
-This _might_ be a particularity of using the Apps-Engine, I'll try it out from inside the engine to see if importing works differently.
-
+- Due to Workers not being able to correctly import Apps-Engine files, we might need to go with many processes for apps instead of an app with many workers.
+- Struggled a while with importing the Apps-Engine. It turned out that I configured the import maps incorrectly, which prevented me from importing files correctly in the subprocess. However, even with a configuration that imports correctly in the subprocess, imports _inside the Worker_ do not work as expected. This might be a problem with the Worker implementation, as 
+it doesn't seem to take the import maps into consideration in the same way as its "host" process.
+  <details>
+    <summary>Previous (wrong) conclusions</summary>
+    There is a big blocker with Apps-Engine imports here. Because the package is designed to not act as a module per se (by exporting the components from its entrypoint) but rather more as a folder for the required files to interact with, Deno does not interact with it the same way Node does. For it to recognize the internal imports from the Apps-Engine it requires the use of <a href="https://deno.land/manual@v1.36.2/basics/import_maps#example---using-deno_stds-fmt-module-via-fmt">import maps</a>
+    
+    Another issue that appeared is how the Apps-Engine is compiled. I've tried different target modules `commonjs`, `umd`, `es6`, but there are always different problems including files from inside the worker. I've been able to interact a bit with the package via the REPL but I couldn't determine why.
+    
+    This _might_ be a particularity of using the Apps-Engine, I'll try it out from inside the engine to see if importing works differently.
+  </details>
 - Deno doesn't have a require and the only way to dynamically import modules is asynchronous.
 - Even if it is possible to import a module native to node (via `node:MODULE_NAME`), that doesn't mean all functionalities are supported - the `vm` module is an example
 - As `vm` is not implemented, we needed to fallback to the `eval`-like `Function` constructor
@@ -35,6 +40,8 @@ This _might_ be a particularity of using the Apps-Engine, I'll try it out from i
 
 From latest to oldest. Sometimes the commit title/message is not good enough, this is an opportunity to expand on them.
 
+* [66e752f](https://github.com/d-gubert/sec-deno-ipc/commit/66e752fed14650053d7597807690cbbe0dc87b5f) Fixed the import map configuration and added demonstration that the subprocess is capable of correctly importing Apps-Engine
+* [1a4b492](https://github.com/d-gubert/sec-deno-ipc/commit/1a4b49224f147bbfb2cf0ee7c29b02f497c97717) Extract the app's deps with regex and preemptively import them all. Started struggling with importing the Apps-Engine.
 * [1715b97](https://github.com/d-gubert/sec-deno-ipc/commit/1715b97cf3a3e89c8240b504977bdceaf2349877) Tried to provide a working `require` function. However, all dynamic imports in Deno are asynchronous.
 * [81e5d21](https://github.com/d-gubert/sec-deno-ipc/commit/81e5d217bcc9af4dbf752f4a7b56e947d89fc018) Replace VM with Function constructor for parsing app code
 * [4e28fe0](https://github.com/d-gubert/sec-deno-ipc/commit/4e28fe0a40a8d4c5b95da295e08e7597d65038a4) Transfer the contents of a bundled rc app from Node to Deno (to worker) - and finding out `vm` does't work
