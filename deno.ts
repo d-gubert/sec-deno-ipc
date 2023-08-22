@@ -1,3 +1,4 @@
+import { App } from '@rocket.chat/apps-engine/definition/App.js';
 import { Buffer } from 'node:buffer';
 import { encode, decode } from 'npm:cbor-x';
 
@@ -7,18 +8,25 @@ const log = (...args: any[]): void => {
 	console.log('DENO >', ...args);
 };
 
-async function processConstructAppMessage(payload: any): Promise<void> {
-	// eslint-disable-next-line
-	// @ts-ignore - Deno makes this available, and eslint was complaining as well
-	const appWorker = new Worker(new URL('./deno-worker.ts', import.meta.url).href, {
-		type: 'module',
-		name: `app-worker:${payload.appId as string}`,
-	});
+log({ App });
 
-	appWorker.postMessage(encode({
-		event: 'construct',
-		payload,
-	}));
+async function processConstructAppMessage(payload: any): Promise<void> {
+	const appWorker = new Worker(
+		// eslint-disable-next-line
+		// @ts-ignore - Deno makes this available, and eslint was complaining as well
+		new URL('./deno-worker.ts', import.meta.url).href,
+		{
+			type: 'module',
+			name: `app-worker:${payload.appId as string}`,
+		},
+	);
+
+	appWorker.postMessage(
+		encode({
+			event: 'construct',
+			payload,
+		}),
+	);
 }
 
 async function mainSubprocess(): Promise<void> {
@@ -29,7 +37,7 @@ async function mainSubprocess(): Promise<void> {
 	for await (const rawChunk of stdin.readable) {
 		const message = decode(rawChunk);
 
-		log({ rawChunk: decoder.decode(rawChunk), cbor: message, });
+		log({ rawChunk: decoder.decode(rawChunk), cbor: message });
 
 		if (message.event === 'construct app') {
 			await processConstructAppMessage(message.payload);
